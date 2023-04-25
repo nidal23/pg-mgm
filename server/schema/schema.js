@@ -1,5 +1,8 @@
-const {projects, clients} = require('../sampleData.js')
 
+//Mongoose models
+
+const Project = require('../models/Project')
+const Client = require('../models/Client')
 
 const {GraphQLObjectType, GraphQLID, GraphQLString, GraphQLSchema, GraphQLList} = require('graphql')
 
@@ -25,7 +28,13 @@ const ProjectType = new GraphQLObjectType({
         clientId: {type: GraphQLID},
         name: {type: GraphQLString},
         description: {type: GraphQLString},
-        progress: {type: GraphQLString}
+        status: { type: GraphQLString },
+        client: {
+            type: ClientType,
+            resolve(parent, args) {
+                return Client.findById(parent.clientId)
+            }
+        }
     })
 })
 
@@ -35,27 +44,27 @@ const RootQuery = new GraphQLObjectType({
         clients: {
             type: new GraphQLList(ClientType),
             resolve(parent, args) {
-                return clients;
+                return Client.find();
             }
         },
         client: {
             type: ClientType,
             args: {id: {type: GraphQLID}},
             resolve(parent, args){
-                return clients.find(client => client.id === args.id)
+                return Client.findById(args.id)
             }
         },
         project: {
             type: ProjectType,
             args: {id: {type: GraphQLID}},
             resolve(parent, args){
-                return projects.find(project => project.id === args.id)
+                return Project.findById(args.id)
             }
         },
         projects: {
             type: new GraphQLList(ProjectType),
             resolve(parent, args){
-                return projects;
+                return Project.find();
             }
         }
     }
@@ -64,3 +73,8 @@ const RootQuery = new GraphQLObjectType({
 module.exports = new GraphQLSchema({
     query: RootQuery,
 })
+
+
+
+
+// mongodb+srv://nidalmwork:gZG9RHRw7ajWXeAr@cluster0.luj6i3c.mongodb.net/test
